@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application météo</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <form id="recherche-ville" action="javascript:;">
+        <div class="onglets">
+            <div>
+                <input type="radio" name="type-recherche" id="type-recherche-nom" value="nom" checked>
+                <label for="type-recherche-nom">Recherche par nom</label>
+            </div>
+            <div>
+                <input type="radio" name="type-recherche" id="type-recherche-coordonnees" value="coordonnees">
+                <label for="type-recherche-coordonnees">Recherche par coordonnées</label>
+            </div>
+        </div>
+        <div class="recherche-nom">
+            <p>
+                <label for="lat">Ville :</label>
+                <input type="text" name="ville" id="ville">
+            </p>
+        </div>
+        <div class="recherche-coordonnees">
+            <p>
+                <input type="button" id="position-actuelle" value="Utiliser ma position actuelle">
+            </p>
+            <p>
+                <label for="latitude">Latitude :</label>
+                <input type="number" name="latitude" id="latitude" min="-90" max="90" step="any">
+            </p>
+            <p>
+                <label for="longitude">Longitude :</label>
+                <input type="number" name="longitude" id="longitude" min="-180" max="180" step="any">
+            </p>
+        </div>
+        <input type="submit" value="Rechercher">
+    </form>
+    <section id="resultats-recherche" style="display: none">
+        <h2>Résultats de recherche</h2>
+        <ul></ul>
+    </section>
+    <script src="script.js"></script>
+</body>
+</html>

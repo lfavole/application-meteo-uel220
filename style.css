@@ -1,0 +1,27 @@
+*, ::before, ::after {
+    box-sizing: border-box;
+}
+
+.onglets {
+    display: flex;
+    gap: 1em;
+}
+.onglets div {
+    background-color: #fafafa;
+    border: 0.125em solid #999999;
+    border-top-left-radius: 0.25em;
+    border-top-right-radius: 0.25em;
+    padding: 0.25em 0.375em;
+    border-bottom: none;
+}
+.onglets div:has(input:checked) {
+    background-color: #aaaaaa;
+    border-color: #424242;
+}
+.recherche-nom, .recherche-coordonnees {
+    display: none;
+}
+#recherche-ville .onglets:has(#type-recherche-nom:checked) ~ .recherche-nom,
+#recherche-ville .onglets:has(#type-recherche-coordonnees:checked) ~ .recherche-coordonnees {
+    display: block;
+}
