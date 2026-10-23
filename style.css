@@ -1,27 +1,245 @@
 *, ::before, ::after {
     box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #f0f4f8;
+    color: #1a1a1a;
+    line-height: 1.5;
+    padding: 1.5rem;
+    max-width: 850px;
+    margin: 0 auto;
+}
+
+/* ===== Formulaire ===== */
+#recherche-ville {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.4rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
 }
 
 .onglets {
     display: flex;
-    gap: 1em;
+    gap: 0.8rem;
+    margin-bottom: 1rem;
 }
+
 .onglets div {
-    background-color: #fafafa;
-    border: 0.125em solid #999999;
-    border-top-left-radius: 0.25em;
-    border-top-right-radius: 0.25em;
-    padding: 0.25em 0.375em;
-    border-bottom: none;
+    flex: 1;
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 0.5rem;
+    text-align: center;
+    cursor: pointer;
 }
+
 .onglets div:has(input:checked) {
-    background-color: #aaaaaa;
-    border-color: #424242;
+    background: #e3f2fd;
+    border-color: #1976d2;
 }
-.recherche-nom, .recherche-coordonnees {
+
+.onglets input {
     display: none;
 }
+
+.recherche-nom,
+.recherche-coordonnees {
+    display: none;
+    margin-bottom: 1rem;
+}
+
 #recherche-ville .onglets:has(#type-recherche-nom:checked) ~ .recherche-nom,
 #recherche-ville .onglets:has(#type-recherche-coordonnees:checked) ~ .recherche-coordonnees {
     display: block;
+}
+
+#recherche-ville label {
+    display: block;
+    margin-bottom: 0.3rem;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+#recherche-ville input[type="text"],
+#recherche-ville input[type="number"] {
+    width: 100%;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+#position-actuelle {
+    width: 100%;
+    padding: 0.6rem;
+    margin-bottom: 0.8rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background: #f5f5f5;
+    cursor: pointer;
+}
+
+#recherche-ville input[type="submit"] {
+    width: 100%;
+    padding: 0.7rem;
+    border: none;
+    border-radius: 8px;
+    background: #1976d2;
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+#recherche-ville input[type="submit"]:hover {
+    background: #1565c0;
+}
+
+/* ===== Résultats de recherche ===== */
+#resultats-recherche {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+}
+
+#resultats-recherche ul {
+    list-style: none;
+    margin-top: 0.8rem;
+}
+
+#resultats-recherche a {
+    display: block;
+    padding: 0.65rem 0.9rem;
+    margin-bottom: 0.4rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #1565c0;
+    border: 1px solid #eee;
+}
+
+#resultats-recherche a:hover {
+    background: #e3f2fd;
+}
+
+/* ===== Météo actuelle ===== */
+#meteo-actuelle {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+}
+
+#meteo-actuelle h2 {
+    font-size: 1.5rem;
+    margin-bottom: 0.2rem;
+}
+
+#date-actuelle {
+    color: #666;
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+}
+
+#meteo-actuelle ul {
+    list-style: none;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+#meteo-actuelle li {
+    background: #f5f7fa;
+    padding: 0.6rem 0.8rem;
+    border-radius: 8px;
+    font-size: 0.95rem;
+}
+
+/* ===== Qualité de l'air ===== */
+#qualite-air {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+}
+
+#qualite-air h2 {
+    margin-bottom: 0.8rem;
+}
+
+#qualite-air ul {
+    list-style: none;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    margin-top: 0.8rem;
+}
+
+#qualite-air li {
+    background: #f5f7fa;
+    padding: 0.55rem 0.8rem;
+    border-radius: 8px;
+}
+
+/* ===== Prévisions ===== */
+#previsions {
+    margin-bottom: 2rem;
+}
+
+#previsions > h2 {
+    margin-bottom: 1rem;
+}
+
+#liste-previsions > div {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.1rem 1.3rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+}
+
+#liste-previsions h3 {
+    color: #1565c0;
+    margin-bottom: 0.7rem;
+    font-size: 1.1rem;
+}
+
+#liste-previsions ul {
+    list-style: none;
+}
+
+#liste-previsions li {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid #eee;
+    font-size: 0.95rem;
+}
+
+#liste-previsions li:last-child {
+    border-bottom: none;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 600px) {
+    body {
+        padding: 1rem;
+    }
+
+    #meteo-actuelle ul,
+    #qualite-air ul {
+        grid-template-columns: 1fr;
+    }
 }
