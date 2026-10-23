@@ -42,6 +42,43 @@
     <section id="resultats-recherche" style="display: none">
         <h2>Résultats de recherche</h2>
         <ul></ul>
+    </section>    <!-- ========== PARTIE SOULAYMAN ========== -->
+
+    <!-- Météo actuelle -->
+    <section id="meteo-actuelle" style="display: none">
+        <h2 id="nom-ville"></h2>
+        <p id="date-actuelle"></p>
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <img id="icone-meteo" src="" alt="Icône météo" width="100">
+            <div>
+                <p id="temperature" style="font-size: 2.2rem; margin: 0;"></p>
+                <p id="description" style="text-transform: capitalize; margin: 0;"></p>
+            </div>
+        </div>
+        <ul>
+            <li>Ressenti : <strong id="ressenti"></strong></li>
+            <li>Humidité : <strong id="humidite"></strong></li>
+            <li>Vent : <strong id="vent"></strong></li>
+            <li>Pression : <strong id="pression"></strong></li>
+        </ul>
+    </section>
+
+    <!-- Qualité de l'air -->
+    <section id="qualite-air" style="display: none">
+        <h2>Qualité de l'air</h2>
+        <p>Indice AQI : <strong id="aqi-valeur"></strong> — <span id="aqi-label"></span></p>
+        <ul>
+            <li>PM2.5 : <strong id="pm25"></strong></li>
+            <li>PM10 : <strong id="pm10"></strong></li>
+            <li>NO₂ : <strong id="no2"></strong></li>
+            <li>O₃ : <strong id="o3"></strong></li>
+        </ul>
+    </section>
+
+    <!-- Prévisions 5 jours -->
+    <section id="previsions" style="display: none">
+        <h2>Prévisions sur 5 jours</h2>
+        <div id="liste-previsions"></div>
     </section>
     <script src="script.js"></script>
 </body>
