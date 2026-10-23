@@ -58,10 +58,10 @@ window.addEventListener("DOMContentLoaded", () => {
                     + (resultat.state ? ", " + resultat.state : "")
                     + ", " + resultat.country
                 );
-                resultatLien.addEventListener("click", e => {
-                    e.preventDefault();
-                    // TODO
-                });
+              resultatLien.addEventListener("click", e => {
+    e.preventDefault();
+    chargerMeteo(resultat.lat, resultat.lon, resultat.name, resultat.country);
+});
                 resultatLi.append(resultatLien);
                 resultatsRechercheListe.append(resultatLi);
             }
@@ -102,5 +102,83 @@ window.addEventListener("DOMContentLoaded", () => {
                 afficherErreur(err.message);
             },
         );
-    });
+    });    
+    
+    // ========== PARTIE SOULAYMAN ==========
+
+    async function chargerMeteo(lat, lon, nomVille, pays) {
+        try {
+            const [meteo, previsions, air] = await Promise.all([
+                fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&lang=fr&appid=${OPENWEATHERMAP_API_KEY}`).then(r => r.json()),
+                fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&lang=fr&appid=${OPENWEATHERMAP_API_KEY}`).then(r => r.json()),
+                fetch(`https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${OPENWEATHERMAP_API_KEY}`).then(r => r.json())
+            ]);
+
+            afficherMeteoActuelle(meteo, nomVille, pays);
+            afficherQualiteAir(air);
+            afficherPrevisions(previsions);
+        } catch (err) {
+            afficherErreur("Erreur lors du chargement des données météo.");
+            console.error(err);
+        }
+    }
+
+    function afficherMeteoActuelle(data, nomVille, pays) {
+        document.getElementById("nom-ville").textContent = `${nomVille}, ${pays}`;
+        document.getElementById("date-actuelle").textContent = new Date().toLocaleDateString("fr-FR", {
+            weekday: "long", year: "numeric", month: "long", day: "numeric"
+        });
+        document.getElementById("icone-meteo").src = `https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`;
+        document.getElementById("icone-meteo").alt = data.weather[0].description;
+        document.getElementById("temperature").textContent = Math.round(data.main.temp) + " °C";
+        document.getElementById("description").textContent = data.weather[0].description;
+        document.getElementById("ressenti").textContent = Math.round(data.main.feels_like) + " °C";
+        document.getElementById("humidite").textContent = data.main.humidity + " %";
+        document.getElementById("vent").textContent = Math.round(data.wind.speed * 3.6) + " km/h";
+        document.getElementById("pression").textContent = data.main.pressure + " hPa";
+        document.getElementById("meteo-actuelle").style.display = "";
+    }
+
+    function afficherQualiteAir(data) {
+        const aqi = data.list[0].main.aqi;
+        const c = data.list[0].components;
+        const labels = { 1: "Bonne", 2: "Correcte", 3: "Moyenne", 4: "Mauvaise", 5: "Très mauvaise" };
+        document.getElementById("aqi-valeur").textContent = aqi;
+        document.getElementById("aqi-label").textContent = labels[aqi] || "Inconnue";
+        document.getElementById("pm25").textContent = c.pm2_5.toFixed(1) + " µg/m³";
+        document.getElementById("pm10").textContent = c.pm10.toFixed(1) + " µg/m³";
+        document.getElementById("no2").textContent = c.no2.toFixed(1) + " µg/m³";
+        document.getElementById("o3").textContent = c.o3.toFixed(1) + " µg/m³";
+        document.getElementById("qualite-air").style.display = "";
+    }
+
+    function afficherPrevisions(data) {
+        const conteneur = document.getElementById("liste-previsions");
+        conteneur.innerHTML = "";
+        const parJour = {};
+        data.list.forEach(item => {
+            const date = new Date(item.dt * 1000);
+            const cle = date.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
+            if (!parJour[cle]) parJour[cle] = [];
+            parJour[cle].push(item);
+        });
+        for (const [jour, items] of Object.entries(parJour)) {
+            const bloc = document.createElement("div");
+            const titre = document.createElement("h3");
+            titre.textContent = jour.charAt(0).toUpperCase() + jour.slice(1);
+            bloc.appendChild(titre);
+            const liste = document.createElement("ul");
+            items.forEach(item => {
+                const date = new Date(item.dt * 1000);
+                const li = document.createElement("li");
+                li.innerHTML = `<strong>${date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}</strong>
+                    <img src="https://openweathermap.org/img/wn/${item.weather[0].icon}.png" width="40">
+                    ${Math.round(item.main.temp)} °C — ${item.weather[0].description}`;
+                liste.appendChild(li);
+            });
+            bloc.appendChild(liste);
+            conteneur.appendChild(bloc);
+        }
+        document.getElementById("previsions").style.display = "";
+    }
 });
