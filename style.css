@@ -9,9 +9,55 @@ body {
     background: #f0f4f8;
     color: #1a1a1a;
     line-height: 1.5;
+    padding: 0;
+    margin: 0;
+    min-height: 100vh;
+}
+#meteo {
     padding: 1.5rem;
     max-width: 850px;
     margin: 0 auto;
+}
+
+header {
+    position: absolute;
+    left: 0;
+    top: 0;
+    padding: 1em;
+    /* Afficher au-dessus de la carte */
+    z-index: 1;
+}
+#carte .leaflet-top.leaflet-left, #meteo {
+    /* Pour la carte, on descend les icônes en haut à gauche de la carte
+    pour qu'elles s'affichent en-dessous de l'en-tête */
+    /* Pour l'onglet météo, on descend les éléments de formulaire
+    pour qu'ils soient facilement cliquables */
+    margin-top: 3.5em;
+}
+
+nav {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    padding: 1em;
+    /* Afficher au-dessus de la carte */
+    z-index: 1;
+}
+
+/* ===== Sections de la page ===== */
+#carte, #meteo {
+    display: none;
+}
+
+body nav:has(#page-carte:checked) ~ #carte,
+body nav:has(#page-meteo:checked) ~ #meteo {
+    display: block;
+}
+
+body:has(nav #page-carte:checked), #carte {
+    height: 100vh;
 }
 
 /* ===== Formulaire ===== */
