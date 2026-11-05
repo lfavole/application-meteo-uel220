@@ -440,24 +440,24 @@ window.addEventListener("DOMContentLoaded", () => {
 
     // ========== PARTIE SOULAYMAN ==========
 
-    async function chargerMeteo(lat, lon, nomVille, pays) {
-        try {
-            const [meteo, previsions, air] = await Promise.all([
-                fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&lang=fr&appid=${OPENWEATHERMAP_API_KEY}`).then(r => r.json()),
-                fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&lang=fr&appid=${OPENWEATHERMAP_API_KEY}`).then(r => r.json()),
-                fetch(`https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${OPENWEATHERMAP_API_KEY}`).then(r => r.json())
-            ]);
-
-            afficherMeteoActuelle(meteo, nomVille, pays);
-            afficherQualiteAir(air);
-            afficherPrevisions(previsions);
-        } catch (err) {
-            afficherErreur("Erreur lors du chargement des données météo.");
-            console.error(err);
-        }
+async function chargerMeteo(lat, lon, nomVille, pays) {
+    try {
+        const [meteo, previsions, air] = await Promise.all([
+            fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&lang=fr&appid=${OPENWEATHERMAP_API_KEY}`).then(r => r.json()),
+            fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&lang=fr&appid=${OPENWEATHERMAP_API_KEY}`).then(r => r.json()),
+            fetch(`https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${OPENWEATHERMAP_API_KEY}`).then(r => r.json())
+        ]);
+        afficherMeteoActuelle(meteo, nomVille, pays);
+        afficherQualiteAir(air);
+        afficherPrevisions(previsions);
         ajouterVilleRecente(nomVille, lat, lon, pays);
-mettreHash(nomVille, lat, lon);
+        mettreHash(nomVille, lat, lon);
+
+    } catch (err) {
+        afficherErreur("Erreur lors du chargement des données météo.");
+        console.error(err);
     }
+}
 
     function afficherMeteoActuelle(data, nomVille, pays) {
         document.getElementById("nom-ville").textContent = `${nomVille}, ${pays}`;
@@ -488,7 +488,7 @@ mettreHash(nomVille, lat, lon);
         document.getElementById("qualite-air").style.display = "";
     }
 
-    function afficherPrevisions(data) {
+       function afficherPrevisions(data) {
         const conteneur = document.getElementById("liste-previsions");
         conteneur.innerHTML = "";
         const parJour = {};
@@ -516,29 +516,31 @@ mettreHash(nomVille, lat, lon);
             conteneur.appendChild(bloc);
         }
         document.getElementById("previsions").style.display = "";
-
-const CLE_STORAGE = "villes_recentes";
-const MAX_VILLES = 8;
-
-function getVillesRecentes() {
-    try {
-        const data = localStorage.getItem(CLE_STORAGE);
-        return data ? JSON.parse(data) : [];
-    } catch (e) {
-        return [];
     }
-}
 
-function ajouterVilleRecente(nom, lat, lon, pays) {
-    let villes = getVillesRecentes();
-    villes = villes.filter(v => !(v.name === nom && v.lat === lat && v.lng === lon));
-    villes.unshift({ name: nom, lat: lat, lng: lon, country: pays || "" });
-    if (villes.length > MAX_VILLES) villes = villes.slice(0, MAX_VILLES);
-    localStorage.setItem(CLE_STORAGE, JSON.stringify(villes));
-    afficherVillesRecentes();
-}
+    // ========== PARTIE SOULAYMAN : localStorage + hash ==========
+    const CLE_STORAGE = "villes_recentes";
+    const MAX_VILLES = 8;
 
-function afficherVillesRecentes() {
+    function getVillesRecentes() {
+        try {
+            const data = localStorage.getItem(CLE_STORAGE);
+            return data ? JSON.parse(data) : [];
+        } catch (e) {
+            return [];
+        }
+    }
+
+    function ajouterVilleRecente(nom, lat, lon, pays) {
+        let villes = getVillesRecentes();
+        villes = villes.filter(v => !(v.name === nom && v.lat === lat && v.lng === lon));
+        villes.unshift({ name: nom, lat: lat, lng: lon, country: pays || "" });
+        if (villes.length > MAX_VILLES) villes = villes.slice(0, MAX_VILLES);
+        localStorage.setItem(CLE_STORAGE, JSON.stringify(villes));
+        afficherVillesRecentes();
+    }
+
+    function afficherVillesRecentes() {
     const liste = document.getElementById("liste-villes-recentes");
     if (!liste) return;
     const villes = getVillesRecentes();
@@ -560,38 +562,35 @@ function afficherVillesRecentes() {
         li.appendChild(a);
         liste.appendChild(li);
     });
-}
-
-function mettreHash(nomVille, lat, lon) {
-    location.hash = encodeURIComponent(nomVille) + "_" + lat + "_" + lon;
-}
-
-function lireHash() {
-    if (!location.hash || location.hash.length < 2) return null;
-    const parties = decodeURIComponent(location.hash.slice(1)).split("_");
-    if (parties.length < 3) return null;
-    return {
-        nom: parties[0],
-        lat: parseFloat(parties[1]),
-        lon: parseFloat(parties[2])
-    };
-}
-
-window.addEventListener("hashchange", () => {
-    const data = lireHash();
-    if (data) {
-        document.getElementById("page-meteo").checked = true;
-        chargerMeteo(data.lat, data.lon, data.nom, "");
+}    function mettreHash(nomVille, lat, lon) {
+        location.hash = encodeURIComponent(nomVille) + "_" + lat + "_" + lon;
     }
-});
 
-// Afficher les villes au chargement
-afficherVillesRecentes();
+    function lireHash() {
+        if (!location.hash || location.hash.length < 2) return null;
+        const parties = decodeURIComponent(location.hash.slice(1)).split("_");
+        if (parties.length < 3) return null;
+        return {
+            nom: parties[0],
+            lat: parseFloat(parties[1]),
+            lon: parseFloat(parties[2])
+        };
+    }
 
-// Si on arrive avec un hash
-const dataHash = lireHash();
-if (dataHash) {
-    document.getElementById("page-meteo").checked = true;
-    chargerMeteo(dataHash.lat, dataHash.lon, dataHash.nom, "");
-}
-});
+    window.addEventListener("hashchange", () => {
+        const data = lireHash();
+        if (data) {
+            document.getElementById("page-meteo").checked = true;
+            chargerMeteo(data.lat, data.lon, data.nom, "");
+        }
+    });
+
+    afficherVillesRecentes();
+
+    const dataHash = lireHash();
+    if (dataHash) {
+        document.getElementById("page-meteo").checked = true;
+        chargerMeteo(dataHash.lat, dataHash.lon, dataHash.nom, "");
+    }
+
+}); 
