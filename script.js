@@ -455,6 +455,8 @@ window.addEventListener("DOMContentLoaded", () => {
             afficherErreur("Erreur lors du chargement des données météo.");
             console.error(err);
         }
+        ajouterVilleRecente(nomVille, lat, lon, pays);
+mettreHash(nomVille, lat, lon);
     }
 
     function afficherMeteoActuelle(data, nomVille, pays) {
@@ -514,5 +516,82 @@ window.addEventListener("DOMContentLoaded", () => {
             conteneur.appendChild(bloc);
         }
         document.getElementById("previsions").style.display = "";
+
+const CLE_STORAGE = "villes_recentes";
+const MAX_VILLES = 8;
+
+function getVillesRecentes() {
+    try {
+        const data = localStorage.getItem(CLE_STORAGE);
+        return data ? JSON.parse(data) : [];
+    } catch (e) {
+        return [];
     }
+}
+
+function ajouterVilleRecente(nom, lat, lon, pays) {
+    let villes = getVillesRecentes();
+    villes = villes.filter(v => !(v.name === nom && v.lat === lat && v.lng === lon));
+    villes.unshift({ name: nom, lat: lat, lng: lon, country: pays || "" });
+    if (villes.length > MAX_VILLES) villes = villes.slice(0, MAX_VILLES);
+    localStorage.setItem(CLE_STORAGE, JSON.stringify(villes));
+    afficherVillesRecentes();
+}
+
+function afficherVillesRecentes() {
+    const liste = document.getElementById("liste-villes-recentes");
+    if (!liste) return;
+    const villes = getVillesRecentes();
+    liste.innerHTML = "";
+    if (villes.length === 0) {
+        liste.innerHTML = "<li>Aucune ville récente</li>";
+        return;
+    }
+    villes.forEach(ville => {
+        const li = document.createElement("li");
+        const a = document.createElement("a");
+        a.href = "#";
+        a.textContent = ville.country ? `${ville.name}, ${ville.country}` : ville.name;
+        a.addEventListener("click", e => {
+            e.preventDefault();
+            document.getElementById("page-meteo").checked = true;
+            chargerMeteo(ville.lat, ville.lng, ville.name, ville.country || "");
+        });
+        li.appendChild(a);
+        liste.appendChild(li);
+    });
+}
+
+function mettreHash(nomVille, lat, lon) {
+    location.hash = encodeURIComponent(nomVille) + "_" + lat + "_" + lon;
+}
+
+function lireHash() {
+    if (!location.hash || location.hash.length < 2) return null;
+    const parties = decodeURIComponent(location.hash.slice(1)).split("_");
+    if (parties.length < 3) return null;
+    return {
+        nom: parties[0],
+        lat: parseFloat(parties[1]),
+        lon: parseFloat(parties[2])
+    };
+}
+
+window.addEventListener("hashchange", () => {
+    const data = lireHash();
+    if (data) {
+        document.getElementById("page-meteo").checked = true;
+        chargerMeteo(data.lat, data.lon, data.nom, "");
+    }
+});
+
+// Afficher les villes au chargement
+afficherVillesRecentes();
+
+// Si on arrive avec un hash
+const dataHash = lireHash();
+if (dataHash) {
+    document.getElementById("page-meteo").checked = true;
+    chargerMeteo(dataHash.lat, dataHash.lon, dataHash.nom, "");
+}
 });
