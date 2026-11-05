@@ -447,6 +447,8 @@ window.addEventListener("DOMContentLoaded", () => {
 
 async function chargerMeteo(lat, lon, nomVille, pays) {
     masquerErreur();
+    const chargement =                  document.getElementById("chargement");
+    chargement.hidden = false;
     try {
         const [meteo, previsions, air] = await Promise.all([
             fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&lang=fr&appid=${OPENWEATHERMAP_API_KEY}`).then(r => r.json()),
@@ -462,6 +464,8 @@ async function chargerMeteo(lat, lon, nomVille, pays) {
     } catch (err) {
         afficherErreur("Erreur lors du chargement des données météo.");
         console.error(err);
+    } finally {
+        chargement.hidden = true;
     }
 }
 
