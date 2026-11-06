@@ -3,15 +3,9 @@ import {Circle, Control, GridLayer, Icon, LayersControl, LeafletMap, Marker, Pop
 const OPENWEATHERMAP_API_KEY = "5f7735d8f11251dfc23cc45e49480ecd";
 
 window.addEventListener("DOMContentLoaded", () => {
-    const formulaireOnglets = document.getElementById("formulaire-onglets");
-
     // =======================
     // Section carte (Laurent)
     // =======================
-    const afficherErreurCarte = (err) => {
-        alert(err);
-    };
-
     // Création de la carte, centrée par défaut sur le monde entier
     const map = new LeafletMap("carte").setView([0, 0], 1);
     // Ajout du fond de carte OpenStreetMap
@@ -23,22 +17,15 @@ window.addEventListener("DOMContentLoaded", () => {
     // =========================================
     // Affichage des villes récemment consultées
     // =========================================
-    // TODO : choisir la structure de données
-    let emplacements = [
-        { lat: 44.56, lng: 6.48, name: "Embrun" },
-    ];
-    // let emplacements = [];
-    // try {
-    //     emplacements = JSON.parse(localStorage.getItem("..."));
-    // } catch (e) {}
-
-    // On dézoome pour afficher tous les emplacements
-    if (emplacements.length)
-        map.fitBounds(emplacements.map(emplacement => [emplacement.lat, emplacement.lng]), { maxZoom: 8 });
 
     let epingles = [];
     // Fonction pour afficher les emplacements enregistrés, à appeler à chaque modification de la liste
-    const afficherEmplacements = () => {
+    const afficherEmplacements = (initialisation) => {
+        // On dézoome pour afficher tous les emplacements
+        const emplacements = getVillesRecentes();
+        if (initialisation && emplacements.length)
+            map.fitBounds(emplacements.map(emplacement => [emplacement.lat, emplacement.lng]), { maxZoom: 8 });
+
         // Suppression des épingles précédentes
         for (let epingle of epingles)
             epingle.remove();
@@ -53,18 +40,31 @@ window.addEventListener("DOMContentLoaded", () => {
                 titre.textContent = emplacement.name;
                 contenuPopup.appendChild(titre);
 
-                // TODO : afficher la météo actuelle avec température, icône...
-                // TODO : bouton "Voir plus" qui renvoie sur l'onglet "Météo"
                 const meteo = document.createElement("div");
-                meteo.textContent = "[Météo actuelle]";
+                meteo.textContent = "Chargement...";
                 contenuPopup.appendChild(meteo);
+
+                fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${emplacement.lat}&lon=${emplacement.lng}&units=metric&lang=fr&appid=${OPENWEATHERMAP_API_KEY}`)
+                .then(r => r.json())
+                .then(data => {
+                    meteo.textContent = " " + data.weather[0].description;
+                    const iconeMeteo = document.createElement("img");
+                    iconeMeteo.src = `https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`;
+                    iconeMeteo.alt = data.weather[0].description;
+                    iconeMeteo.style.height = "1em";
+                    meteo.insertBefore(iconeMeteo, meteo.firstChild);
+                });
+
+                const voirPlus = document.createElement("a");
+                voirPlus.href = hashVille(emplacement.name, emplacement.lat, emplacement.lng);
+                voirPlus.textContent = "Voir plus";
+                contenuPopup.appendChild(voirPlus);
 
                 return contenuPopup;
             });
             epingles.push(epingle);
         }
     };
-    afficherEmplacements();
 
     // ===========================================
     // Recherche de lieu lors du clic sur la carte
@@ -147,7 +147,7 @@ window.addEventListener("DOMContentLoaded", () => {
                     },
                     // En cas d'erreur
                     err => {
-                        afficherErreurCarte(err.message);
+                        afficherErreur(err.message);
                     },
                 );
             });
@@ -204,7 +204,7 @@ window.addEventListener("DOMContentLoaded", () => {
     // et que l'utilisateur a essayé de zoomer, on affiche un message
     const verifierBlocageZoom = () => {
         if (zoomDebut == map.getZoom() && map.getZoom() == map.getMaxZoom() && map.getMaxZoom() == 8) {
-            afficherErreurCarte("Pour zoomer au-delà de ce seuil, veuillez désactiver les calques de données.");
+            afficherErreur("Pour zoomer au-delà de ce seuil, veuillez désactiver les calques de données.");
             // TODO : bouton désactiver ?
             // for (let type in typesCartes) {
             //     if (map.hasLayer(calques[typesCartes[type]]))
@@ -321,7 +321,6 @@ window.addEventListener("DOMContentLoaded", () => {
     const boutonRecherche = rechercheVilleForm.querySelector('input[type="submit"]');
 
     const resultatsRecherche = document.getElementById("resultats-recherche");
-    const resultatsRechercheListe = resultatsRecherche.querySelector("ul");
 
     const afficherResultatsRecherche = (resultats, callback) => {
         const conteneur = document.createElement("ul");
@@ -351,16 +350,17 @@ window.addEventListener("DOMContentLoaded", () => {
 
     rechercheVilleForm.addEventListener("submit", async e => {
         e.preventDefault();
+        const typeRecherche = rechercheVilleForm["type-recherche"].value;
+        const ville = rechercheVilleForm.ville.value.trim();
+        const latitude = rechercheVilleForm.latitude.value;
+        const longitude = rechercheVilleForm.longitude.value;
+        location.hash = "#recherche=" + encodeURIComponent(typeRecherche == "nom" ? ville : latitude + "," + longitude);
         resultatsRecherche.style.display = "none";
         boutonRecherche.value = "Recherche...";
         boutonRecherche.disabled = true;
         for (const bouton of rechercheVilleForm["type-recherche"])
             bouton.disabled = true;
         try {
-            const typeRecherche = rechercheVilleForm["type-recherche"].value;
-            const ville = rechercheVilleForm.ville.value.trim();
-            const latitude = rechercheVilleForm.latitude.value;
-            const longitude = rechercheVilleForm.longitude.value;
             let data;
             if (typeRecherche == "nom") {
                 if (!ville) {
@@ -540,7 +540,7 @@ async function chargerMeteo(lat, lon, nomVille, pays) {
         afficherVillesRecentes();
     }
 
-    function afficherVillesRecentes() {
+    function afficherVillesRecentes(initialisation) {
     const liste = document.getElementById("liste-villes-recentes");
     if (!liste) return;
     const villes = getVillesRecentes();
@@ -562,35 +562,87 @@ async function chargerMeteo(lat, lon, nomVille, pays) {
         li.appendChild(a);
         liste.appendChild(li);
     });
-}    function mettreHash(nomVille, lat, lon) {
-        location.hash = encodeURIComponent(nomVille) + "_" + lat + "_" + lon;
+    afficherEmplacements(true);
+}
+    function hashVille(nomVille, lat, lon) {
+        return "#" + encodeURIComponent(nomVille) + "_" + lat + "_" + lon;
+    }
+    function mettreHash(nomVille, lat, lon) {
+        location.hash = hashVille(nomVille, lat, lon);
     }
 
     function lireHash() {
-        if (!location.hash || location.hash.length < 2) return null;
+        if (!location.hash || location.hash == "#carte") return { type: "carte" };
+        if (location.hash == "#meteo") return { type: "meteo" };
+        if (location.hash.startsWith("#recherche=")) {
+            const terme = decodeURIComponent((location.hash.match(/^#recherche=(.*)$/) || [])[1] || "");
+            if (terme.includes(",")) {
+                const parties = terme.split(",");
+                if (parties.length == 2 && !isNaN(+parties[0]) && !isNaN(+parties[1]))
+                    return { type: "recherche", lat: +parties[0], lon: +parties[1] };
+            }
+            return { type: "recherche", terme: terme };
+        }
         const parties = decodeURIComponent(location.hash.slice(1)).split("_");
-        if (parties.length < 3) return null;
-        return {
-            nom: parties[0],
-            lat: parseFloat(parties[1]),
-            lon: parseFloat(parties[2])
-        };
+        if (parties.length >= 3) {
+            return {
+                type: "previsions",
+                nom: parties[0],
+                lat: parseFloat(parties[1]),
+                lon: parseFloat(parties[2])
+            };
+        }
+        // Fallback si on n'arrive pas à lire le hash
+        return { type: "carte" };
     }
 
     window.addEventListener("hashchange", () => {
         const data = lireHash();
-        if (data) {
+        if (data.type == "previsions") {
             document.getElementById("page-meteo").checked = true;
             chargerMeteo(data.lat, data.lon, data.nom, "");
         }
     });
 
-    afficherVillesRecentes();
+    afficherVillesRecentes(true);
 
     const dataHash = lireHash();
-    if (dataHash) {
+    if (dataHash.type == "previsions") {
         document.getElementById("page-meteo").checked = true;
         chargerMeteo(dataHash.lat, dataHash.lon, dataHash.nom, "");
     }
 
-}); 
+    // Lancement automatique de la recherche
+    if (dataHash.type == "recherche") {
+        if (dataHash.lat != null || dataHash.lon != null) {
+            rechercheVilleForm["type-recherche"].value = "coordonnees";
+            rechercheVilleForm.latitude.value = dataHash.lat;
+            rechercheVilleForm.longitude.value = dataHash.lon;
+        } else {
+            rechercheVilleForm["type-recherche"].value = "nom";
+            rechercheVilleForm.ville.value = dataHash.terme;
+        }
+        rechercheVilleForm.querySelector('input[type="submit"]').click();
+    }
+
+    const TYPES_MAP = {
+        carte: "carte",
+        meteo: "meteo",
+        recherche: "meteo",
+        previsions: "meteo",
+    };
+    // Enregistrement de la page actuellement consultée
+    const formulaireOnglets = document.getElementById("formulaire-onglets");
+    for (let page of formulaireOnglets.page) {
+        page.addEventListener("change", () => {
+            const type = TYPES_MAP[lireHash().type];
+            if (type != formulaireOnglets.page.value)
+                location.hash = "#" + formulaireOnglets.page.value;
+        });
+    }
+    // Sélection automatique de la page au chargement
+    const type = TYPES_MAP[lireHash().type];
+    if (type != formulaireOnglets.page.value)
+        formulaireOnglets.page.value = type;
+
+});
