@@ -312,9 +312,13 @@ window.addEventListener("DOMContentLoaded", () => {
         if (state == "granted")
             activerMoniteurPosition();
     });
-
+    const zoneErreur = document.getElementById("erreur");
     const afficherErreur = (err) => {
-        alert(err);
+        zoneErreur.textContent = err instanceof Error ? err.message : String(err);
+        zoneErreur.hidden = false;
+    };
+    const masquerErreur = () => {
+        zoneErreur.hidden = true;
     };
 
     const rechercheVilleForm = document.getElementById("recherche-ville");
@@ -350,6 +354,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
     rechercheVilleForm.addEventListener("submit", async e => {
         e.preventDefault();
+        masquerErreur();
         const typeRecherche = rechercheVilleForm["type-recherche"].value;
         const ville = rechercheVilleForm.ville.value.trim();
         const latitude = rechercheVilleForm.latitude.value;
@@ -441,6 +446,9 @@ window.addEventListener("DOMContentLoaded", () => {
     // ========== PARTIE SOULAYMAN ==========
 
 async function chargerMeteo(lat, lon, nomVille, pays) {
+    masquerErreur();
+    const chargement =                  document.getElementById("chargement");
+    chargement.hidden = false;
     try {
         const [meteo, previsions, air] = await Promise.all([
             fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&lang=fr&appid=${OPENWEATHERMAP_API_KEY}`).then(r => r.json()),
@@ -456,6 +464,8 @@ async function chargerMeteo(lat, lon, nomVille, pays) {
     } catch (err) {
         afficherErreur("Erreur lors du chargement des données météo.");
         console.error(err);
+    } finally {
+        chargement.hidden = true;
     }
 }
 
