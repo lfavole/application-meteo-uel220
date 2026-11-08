@@ -448,29 +448,29 @@ window.addEventListener("DOMContentLoaded", () => {
 
     // ========== PARTIE SOULAYMAN ==========
 
-async function chargerMeteo(lat, lon, nomVille, pays) {
-    masquerErreur();
-    const chargement = document.getElementById("chargement-meteo");
-    chargement.hidden = false;
-    try {
-        const [meteo, previsions, air] = await Promise.all([
-            fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&lang=fr&appid=${OPENWEATHERMAP_API_KEY}`).then(r => r.json()),
-            fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&lang=fr&appid=${OPENWEATHERMAP_API_KEY}`).then(r => r.json()),
-            fetch(`https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${OPENWEATHERMAP_API_KEY}`).then(r => r.json())
-        ]);
-        afficherMeteoActuelle(meteo, nomVille, pays);
-        afficherQualiteAir(air);
-        afficherPrevisions(previsions);
-        ajouterVilleRecente(nomVille, lat, lon, pays);
-        mettreHash(nomVille, lat, lon);
+    async function chargerMeteo(lat, lon, nomVille, pays) {
+        masquerErreur();
+        const chargement = document.getElementById("chargement-meteo");
+        chargement.hidden = false;
+        try {
+            const [meteo, previsions, air] = await Promise.all([
+                fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&lang=fr&appid=${OPENWEATHERMAP_API_KEY}`).then(r => r.json()),
+                fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&lang=fr&appid=${OPENWEATHERMAP_API_KEY}`).then(r => r.json()),
+                fetch(`https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${OPENWEATHERMAP_API_KEY}`).then(r => r.json())
+            ]);
+            afficherMeteoActuelle(meteo, nomVille, pays);
+            afficherQualiteAir(air);
+            afficherPrevisions(previsions);
+            ajouterVilleRecente(nomVille, lat, lon, pays);
+            mettreHash(nomVille, lat, lon);
 
-    } catch (err) {
-        afficherErreur("Erreur lors du chargement des données météo.");
-        console.error(err);
-    } finally {
-        chargement.hidden = true;
+        } catch (err) {
+            afficherErreur("Erreur lors du chargement des données météo.");
+            console.error(err);
+        } finally {
+            chargement.hidden = true;
+        }
     }
-}
 
     function afficherMeteoActuelle(data, nomVille, pays) {
         document.getElementById("nom-ville").textContent = `${nomVille}, ${pays}`;
@@ -501,7 +501,7 @@ async function chargerMeteo(lat, lon, nomVille, pays) {
         document.getElementById("qualite-air").style.display = "";
     }
 
-       function afficherPrevisions(data) {
+    function afficherPrevisions(data) {
         const conteneur = document.getElementById("liste-previsions");
         conteneur.innerHTML = "";
         const parJour = {};
@@ -554,29 +554,29 @@ async function chargerMeteo(lat, lon, nomVille, pays) {
     }
 
     function afficherVillesRecentes(initialisation) {
-    const liste = document.getElementById("liste-villes-recentes");
-    if (!liste) return;
-    const villes = getVillesRecentes();
-    liste.innerHTML = "";
-    if (villes.length === 0) {
-        liste.innerHTML = "<li>Aucune ville récente</li>";
-        return;
-    }
-    villes.forEach(ville => {
-        const li = document.createElement("li");
-        const a = document.createElement("a");
-        a.href = "#";
-        a.textContent = ville.country ? `${ville.name}, ${ville.country}` : ville.name;
-        a.addEventListener("click", e => {
-            e.preventDefault();
-            document.getElementById("page-meteo").checked = true;
-            chargerMeteo(ville.lat, ville.lng, ville.name, ville.country || "");
+        const liste = document.getElementById("liste-villes-recentes");
+        if (!liste) return;
+        const villes = getVillesRecentes();
+        liste.innerHTML = "";
+        if (villes.length === 0) {
+            liste.innerHTML = "<li>Aucune ville récente</li>";
+            return;
+        }
+        villes.forEach(ville => {
+            const li = document.createElement("li");
+            const a = document.createElement("a");
+            a.href = "#";
+            a.textContent = ville.country ? `${ville.name}, ${ville.country}` : ville.name;
+            a.addEventListener("click", e => {
+                e.preventDefault();
+                document.getElementById("page-meteo").checked = true;
+                chargerMeteo(ville.lat, ville.lng, ville.name, ville.country || "");
+            });
+            li.appendChild(a);
+            liste.appendChild(li);
         });
-        li.appendChild(a);
-        liste.appendChild(li);
-    });
-    afficherEmplacements(true);
-}
+        afficherEmplacements(initialisation);
+    }
     function hashVille(nomVille, lat, lon) {
         return "#" + encodeURIComponent(nomVille) + "_" + lat + "_" + lon;
     }

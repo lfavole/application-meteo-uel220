@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Application météo</title>
     <link rel="stylesheet" href="style.css">
-	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@2.0.0-beta.1/dist/leaflet.css">
-	<script type="importmap">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@2.0.0-beta.1/dist/leaflet.css">
+    <script type="importmap">
 		{"imports": {"leaflet": "https://cdn.jsdelivr.net/npm/leaflet@2.0.0-beta.1/dist/leaflet.js"}}
 	</script>
 </head>
@@ -60,16 +60,17 @@
             </div>
             <input type="submit" value="Rechercher">
         </form>
-		<section id="villes-recentes">
-    <h2>Villes récentes</h2>
-    <ul id="liste-villes-recentes"></ul>
-</section>
+        <section id="villes-recentes">
+            <h2>Villes récentes</h2>
+            <ul id="liste-villes-recentes"></ul>
+        </section>
         <div id="chargement-resultats" class="spinner" hidden></div>
         <section id="resultats-recherche" style="display: none">
             <h2>Résultats de recherche</h2>
             <ul></ul>
-        </section>    <!-- ========== PARTIE SOULAYMAN ========== -->
+        </section>
 
+        <!-- ========== PARTIE SOULAYMAN ========== -->
         <!-- Météo actuelle -->
         <div id="chargement-meteo" class="spinner" hidden></div>
         <section id="meteo-actuelle" style="display: none">
