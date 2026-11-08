@@ -365,6 +365,8 @@ window.addEventListener("DOMContentLoaded", () => {
         boutonRecherche.disabled = true;
         for (const bouton of rechercheVilleForm["type-recherche"])
             bouton.disabled = true;
+        const chargement = document.getElementById("chargement-resultats");
+        chargement.hidden = false;
         try {
             let data;
             if (typeRecherche == "nom") {
@@ -401,6 +403,7 @@ window.addEventListener("DOMContentLoaded", () => {
         } catch (e) {
             afficherErreur(e);
         } finally {
+            chargement.hidden = true;
             boutonRecherche.value = "Rechercher";
             boutonRecherche.disabled = false;
             for (const bouton of rechercheVilleForm["type-recherche"])
@@ -447,7 +450,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
 async function chargerMeteo(lat, lon, nomVille, pays) {
     masquerErreur();
-    const chargement =                  document.getElementById("chargement");
+    const chargement = document.getElementById("chargement-meteo");
     chargement.hidden = false;
     try {
         const [meteo, previsions, air] = await Promise.all([
